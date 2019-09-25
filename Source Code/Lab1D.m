@@ -1,5 +1,5 @@
 % Declaring variables for number of points, dimensions, and workers
-np=1e5; nd=10; nl = 4;
+np=1e7; nd=10; nl = 8;
 
 % number of workers
 hp = gcp('nocreate');
@@ -10,12 +10,19 @@ tic;
 % MATLAB executes the code within the SPMD body denoted by STATEMENTS on
 % several MATLAB workers simultaneously
 spmd
+    npp1 = floor(np/nl); % # pts per lab
+    np1o = np-nl*npp1; % #pts left over 
+    if (labindex==1)
+        npt1 = npp1+np1o; % #pts for this Lab
+    else 
+        npt1 = npp1;
+    end 
+        
     % Declare variables to all the workers
-    nppl = round(np/nl);
-    A = randn(nppl,nd); B = randn((nppl),nd);
-    d = zeros(nppl,1);
+    A = randn(np/nl, nd); B = randn(np/nl,nd);
+    d = zeros(np/nl,1);
     % Run the for loop of the algorithm
-    for i = 1:nppl
+    for i = 1:np/8
         for j = 1:nd
             d(i) = d(i) + (B(i,j) - A(i,j)).^2;
         end
